@@ -3,6 +3,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:notes/firebase_options.dart';
 import 'package:notes/views/login_views.dart';
+import 'package:notes/views/register_views.dart';
+import 'package:notes/views/verify_email_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,6 +17,10 @@ void main() async {
       useMaterial3: true,
     ),
     home: const HomePage(),
+    routes: {
+      '/login/': (context) => const LoginView(),
+      '/register/': (context) => const RegisterView(),
+    },
   ));
 }
 
@@ -23,30 +29,28 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Home'),
-        backgroundColor: Colors.red[200],
+    return FutureBuilder(
+      future: Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
       ),
-      body: FutureBuilder(
-        future: Firebase.initializeApp(
-          options: DefaultFirebaseOptions.currentPlatform,
-        ),
-        builder: (context, snapshot) {
-          switch (snapshot.connectionState) {
-            case ConnectionState.done:
-              final user = FirebaseAuth.instance.currentUser;
-              if (user?.emailVerified ?? false) {
-                print('You are verified User');
+      builder: (context, snapshot) {
+        switch (snapshot.connectionState) {
+          case ConnectionState.done:
+            final user = FirebaseAuth.instance.currentUser;
+            if (user != null) {
+              if (user.emailVerified) {
+                print('Email verified');
               } else {
-                print('You are not a verified User you need to verify');
+                return const VerifyEmailView();
               }
-              return const Text('Done');
-            default:
-              return const Text('loading');
-          }
-        },
-      ),
+            } else {
+              return const LoginView();
+            }
+            return const Text('Done');
+          default:
+            return const CircularProgressIndicator();
+        }
+      },
     );
   }
 }

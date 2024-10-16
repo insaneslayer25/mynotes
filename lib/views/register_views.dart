@@ -1,14 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class LoginView extends StatefulWidget {
-  const LoginView({super.key});
+class RegisterView extends StatefulWidget {
+  const RegisterView({super.key});
 
   @override
-  State<LoginView> createState() => _LoginViewState();
+  State<RegisterView> createState() => _RegisterViewState();
 }
 
-class _LoginViewState extends State<LoginView> {
+class _RegisterViewState extends State<RegisterView> {
   late final TextEditingController _email;
   late final TextEditingController _password;
 
@@ -30,7 +30,7 @@ class _LoginViewState extends State<LoginView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Login'),
+        title: const Text('Register'),
       ),
       body: Column(
         children: [
@@ -58,28 +58,32 @@ class _LoginViewState extends State<LoginView> {
               final password = _password.text;
               try {
                 final usercredential =
-                    await FirebaseAuth.instance.signInWithEmailAndPassword(
+                    await FirebaseAuth.instance.createUserWithEmailAndPassword(
                   email: email,
                   password: password,
                 );
                 print(usercredential);
               } on FirebaseAuthException catch (e) {
-                if (e.code == 'invalid-credential') {
-                  print('Invalid Credential change password or email');
+                if (e.code == 'weak-password') {
+                  print('Weak Password');
+                } else if (e.code == 'email-already-in-use') {
+                  print('You are already registerd User');
+                } else if (e.code == 'invalid-email') {
+                  print('Invalid Email');
                 }
               }
             },
-            label: const Text('Login'),
-            icon: const Icon(Icons.login),
+            label: const Text('Register'),
+            icon: const Icon(Icons.add),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pushNamedAndRemoveUntil(
-                '/register/',
-                (route) => false,
+                '/login/',
+                (context) => false,
               );
             },
-            child: const Text('New User? Register here'),
+            child: const Text('Already Registered? Login here'),
           )
         ],
       ),
